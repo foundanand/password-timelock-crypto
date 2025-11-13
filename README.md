@@ -18,7 +18,7 @@ Copy the example file:
 cp .env.example .env
 ```
 
-Generate the required drand network variables by visiting the [drand networks page](https://docs.drand.love/dev-guide/developer/http-api) and selecting a network. For quickstart, use the mainnet values:
+Generate the required drand network variables by visiting the [drand networks page](https://docs.drand.love/dev-guide/developer/http-api) and selecting a network.
 
 ```bash
 # .env
