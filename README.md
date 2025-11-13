@@ -2,6 +2,13 @@
 
 A hybrid encryption system combining password-based encryption with time-lock cryptography using drand randomness beacons.
 
+
+## How it works
+
+![Password Timelock Crypto architecture](./how_it_works.png)
+
+Figure: Overview of the hybrid encryption flow — local password-derived key + drand time-lock beacon for timed decryption. Replace the path with your image file as needed.
+
 ## Setup
 
 ### Install Dependencies
