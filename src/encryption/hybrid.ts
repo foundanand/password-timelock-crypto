@@ -7,8 +7,6 @@ export async function hybridEncrypt(
   data: string, 
   config: EncryptionConfig
 ): Promise<EncryptedData> {
-  // const salt = generateSalt();
-  // const passwordHash = hashPassword(config.password);
   
   // Generate PGP keys
   const { privateKey, publicKey } = await generatePGPKeys(config.password);
@@ -37,7 +35,6 @@ export async function hybridEncrypt(
     publicKey,
     encryptedData: encrypted,
     timelockedPrivateKey: timelockedKey,
-    // salt,
     unlockTime,
     roundNumber
   };

@@ -7,7 +7,6 @@ export interface EncryptedData {
   publicKey: string;
   encryptedData: string;
   timelockedPrivateKey: string;
-  // salt: string;
   unlockTime: Date;
   roundNumber: number;
 }
