@@ -1,42 +1,58 @@
 import * as openpgp from 'openpgp';
-import { generatePGPKeys, generateSalt, hashPassword } from './pgp';
+import { generatePGPKeys } from './pgp';
 import { encryptWithTimelock, decryptWithTimelock } from './timelock';
-import { EncryptionConfig, EncryptedData } from '../types';
+import {
+  Duration,
+  EncryptionConfig,
+  EncryptionConfigWithCustomDuration,
+  EncryptedData,
+} from '../types';
+
+const DURATION_MS: Record<Duration, number> = {
+  min: 60 * 1000,
+  month: 30 * 24 * 60 * 60 * 1000,
+  year: 365 * 24 * 60 * 60 * 1000,
+};
+
+function isCustomDurationConfig(
+  config: EncryptionConfig | EncryptionConfigWithCustomDuration
+): config is EncryptionConfigWithCustomDuration {
+  return 'durationMs' in config;
+}
+
+function getDurationMs(config: EncryptionConfig | EncryptionConfigWithCustomDuration): number {
+  if (isCustomDurationConfig(config)) {
+    return config.durationMs;
+  }
+  return DURATION_MS[config.duration];
+}
 
 export async function hybridEncrypt(
-  data: string, 
-  config: EncryptionConfig
+  data: string,
+  config: EncryptionConfig | EncryptionConfigWithCustomDuration
 ): Promise<EncryptedData> {
-  
-  // Generate PGP keys
   const { privateKey, publicKey } = await generatePGPKeys(config.password);
-  
-  // Encrypt data with public key
+
   const encrypted = await openpgp.encrypt({
     message: await openpgp.createMessage({ text: data }),
-    encryptionKeys: await openpgp.readKey({ armoredKey: publicKey })
+    encryptionKeys: await openpgp.readKey({ armoredKey: publicKey }),
   });
-  
-  // Calculate unlock time
-  const durationMs = 
-    config.duration === 'min' ? 60 * 1000 :
-    config.duration === 'month' ? 30 * 24 * 60 * 60 * 1000 :
-    365 * 24 * 60 * 60 * 1000;
+
+  const durationMs = getDurationMs(config);
   const unlockTime = new Date(Date.now() + durationMs);
-  
-  // Time-lock the private key
+
   const privateKeyBytes = new TextEncoder().encode(privateKey);
   const { encrypted: timelockedKey, roundNumber } = await encryptWithTimelock(
-    privateKeyBytes, 
+    privateKeyBytes,
     unlockTime
   );
-  
+
   return {
     publicKey,
     encryptedData: encrypted,
     timelockedPrivateKey: timelockedKey,
     unlockTime,
-    roundNumber
+    roundNumber,
   };
 }
 
